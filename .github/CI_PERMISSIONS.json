@@ -4,5 +4,11 @@
         "can_rerun_failed_ci": true,
         "cooldown_interval_minutes": 0,
         "reason": "maintainer"
+    },
+    "sglang-neuron-sync-demo[bot]": {
+        "can_tag_run_ci_label": true,
+        "can_rerun_failed_ci": true,
+        "cooldown_interval_minutes": 0,
+        "reason": "Neuron sync bot; publishes changes that passed internal CI"
     }
 }
