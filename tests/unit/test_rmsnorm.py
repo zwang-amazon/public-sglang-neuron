@@ -34,3 +34,13 @@ def test_long_row_with_mixed_magnitudes():
 
 def test_eps_keeps_zero_row_finite():
     assert rmsnorm([0.0, 0.0], [1.0, 1.0]) == [0.0, 0.0]
+
+
+@pytest.mark.parametrize("eps", [-1.0, float("nan"), float("inf")])
+def test_invalid_eps(eps):
+    with pytest.raises(ValueError, match="eps"):
+        rmsnorm([1.0], [1.0], eps=eps)
+
+
+def test_zero_eps_is_allowed():
+    assert rmsnorm([2.0], [1.0], eps=0.0) == pytest.approx([1.0])
