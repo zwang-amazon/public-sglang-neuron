@@ -1,0 +1,60 @@
+# L1: Trainium correctness tests for pull requests that change hardware paths.
+# The Trainium runner is a stub in this demo (ubuntu-latest with a stub device).
+#
+# Runs under pull_request only: code from the pull request (fork or not) gets a
+# read-only token and no secrets. The policy that decides whether the tests run
+# (tools/ci/l1_gate.py, .github/CI_PERMISSIONS.json) is read from the default
+# branch, so a pull request cannot approve itself.
+name: L1 Trainium CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: read
+
+jobs:
+  authorize:
+    name: Authorize
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - name: Check out the policy from the default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Decide
+        id: decide
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 tools/ci/l1_gate.py authorize --pr "$PR" --sha "$SHA"
+
+  trainium-tests:
+    name: Trainium tests (stub)
+    needs: authorize
+    if: needs.authorize.outputs.run == 'true'
+    runs-on: ubuntu-latest # stands in for a trn2 runner provided by Neuron GitHub CI
+    timeout-minutes: 15
+    steps:
+      - name: Check out the pull request head commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: pip install -r requirements-dev.txt
+      - name: Smoke and logits tests (stub device)
+        env:
+          SGLANG_NEURON_DEVICE: stub
+        run: pytest -q tests/neuron -m neuron

@@ -1,0 +1,38 @@
+# L0: lint, workflow lint, CPU unit tests and secret scan. Runs on every pull request,
+# including fork pull requests, with a read-only token and no secrets. Required check.
+name: L0
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: l0-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  l0:
+    name: L0
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check . && ruff format --check .
+      - name: Workflow lint
+        run: python tools/ci/check_workflows.py
+      - name: CPU unit tests
+        run: pytest -q tests/unit
+      - name: Secret scan
+        run: python tools/ci/secret_scan.py

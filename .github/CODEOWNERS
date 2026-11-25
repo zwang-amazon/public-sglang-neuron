@@ -1,0 +1,4 @@
+# Code owners approve changes to their directories. Maintainers belong to every group.
+*                       @zwang-amazon
+/sglang_neuron/kernels/ @zwang-amazon
+/.github/               @zwang-amazon

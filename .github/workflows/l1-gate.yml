@@ -1,0 +1,65 @@
+# L1 gate: posts the required "L1 Trainium gate" status on each pull request head.
+#
+#   success  no hardware path changed, or the Trainium tests passed on this commit
+#   pending  hardware paths changed and the tests have not passed yet; a skipped
+#            run never counts as a pass
+#   failure  the tests failed, or an unapproved pull request changes .github/
+#
+# It also handles maintainer approval: the run-ci label or a /tag-and-rerun-ci
+# comment approves the current head commit (status ci/run-ci-approved) and re-runs
+# L1. Approval is per commit, so a new push from an unlisted author clears it.
+#
+# This workflow has a write token, so it runs only code from the default branch
+# and reads the pull request through the API. It never checks out pull request code.
+name: L1 Trainium gate
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  workflow_run:
+    workflows: ["L1 Trainium CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: write
+  issues: write
+  pull-requests: write
+  statuses: write
+
+concurrency:
+  group: l1-gate-${{ github.event.pull_request.number || github.event.issue.number || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Gate
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (github.event.issue.pull_request && contains(github.event.comment.body, '/tag-and-rerun-ci'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the default branch (never the pull request)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Handle approval
+        if: github.event_name != 'workflow_run'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/ci/l1_gate.py handle
+      - name: Post the gate status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -n "$PR" ]; then
+            python3 tools/ci/l1_gate.py evaluate --pr "$PR"
+          else
+            python3 tools/ci/l1_gate.py evaluate --sha "$SHA"
+          fi
