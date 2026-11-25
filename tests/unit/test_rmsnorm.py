@@ -19,3 +19,9 @@ def test_weight_scales_output():
 def test_length_mismatch():
     with pytest.raises(ValueError):
         rmsnorm([1.0], [1.0, 2.0])
+
+
+def test_long_row_with_mixed_magnitudes():
+    x = [1e8] + [1.0] * 10_000
+    exact = 1.0 / math.sqrt(math.fsum(v * v for v in x) / len(x) + 1e-6)
+    assert rmsnorm(x, [1.0] * len(x))[1] == exact
