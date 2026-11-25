@@ -6,6 +6,8 @@ from collections.abc import Sequence
 
 def rmsnorm(x: Sequence[float], weight: Sequence[float], eps: float = 1e-6) -> list[float]:
     """Return x / sqrt(mean(x**2) + eps) * weight."""
+    if not x:
+        raise ValueError("x must not be empty")
     if len(x) != len(weight):
         raise ValueError("x and weight must have the same length")
     # fsum keeps the mean of squares exact for long rows with mixed magnitudes.

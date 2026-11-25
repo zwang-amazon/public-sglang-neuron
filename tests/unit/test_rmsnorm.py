@@ -16,6 +16,11 @@ def test_weight_scales_output():
     assert out == pytest.approx([2 * 3 / rms, 0.5 * 4 / rms])
 
 
+def test_empty_row():
+    with pytest.raises(ValueError, match="empty"):
+        rmsnorm([], [])
+
+
 def test_length_mismatch():
     with pytest.raises(ValueError):
         rmsnorm([1.0], [1.0, 2.0])
