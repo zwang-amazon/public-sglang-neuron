@@ -34,3 +34,8 @@ def test_long_row_with_mixed_magnitudes():
 
 def test_eps_keeps_zero_row_finite():
     assert rmsnorm([0.0, 0.0], [1.0, 1.0]) == [0.0, 0.0]
+
+
+def test_negative_eps():
+    with pytest.raises(ValueError, match="eps"):
+        rmsnorm([1.0], [1.0], eps=-1.0)
