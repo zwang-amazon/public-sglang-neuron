@@ -17,6 +17,8 @@ concurrency:
 jobs:
   l0:
     name: L0
+    # Private mirrors carry this file too; public CI runs only in the public repository.
+    if: github.repository == 'zwang-amazon/public-sglang-neuron'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
