@@ -36,6 +36,7 @@ def test_eps_keeps_zero_row_finite():
     assert rmsnorm([0.0, 0.0], [1.0, 1.0]) == [0.0, 0.0]
 
 
-def test_negative_eps():
+@pytest.mark.parametrize("eps", [-1.0, float("nan"), float("inf")])
+def test_invalid_eps(eps):
     with pytest.raises(ValueError, match="eps"):
-        rmsnorm([1.0], [1.0], eps=-1.0)
+        rmsnorm([1.0], [1.0], eps=eps)
