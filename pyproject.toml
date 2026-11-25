@@ -13,4 +13,5 @@ target-version = "py39"
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 markers = ["neuron: needs a NeuronCore"]
