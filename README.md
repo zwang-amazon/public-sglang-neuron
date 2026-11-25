@@ -13,8 +13,8 @@ The scenario walkthrough and the mapping from each mechanism to the operating mo
 - `main` is the only place code lands, through squash-merged pull requests.
 - Every change follows the same steps, whoever wrote it: L0, review, L1 Trainium CI when hardware paths
   change, squash merge.
-- Changes from Neuron's private repository arrive as ordinary pull requests, pushed by a push tool.
-  Contributors open pull requests from forks.
+- Changes from Neuron's private repository arrive as ordinary pull requests, opened by the Neuron sync
+  bot after internal checks. Contributors open pull requests from forks.
 - A sync bot in the private repository mirrors `main` there after each merge. Nothing flows back except
   through pull requests here.
 
