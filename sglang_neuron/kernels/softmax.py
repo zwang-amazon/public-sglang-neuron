@@ -4,11 +4,14 @@ import math
 from collections.abc import Sequence
 
 
-def softmax(x: Sequence[float]) -> list[float]:
-    """Return exp(x - max(x)) / sum(exp(x - max(x)))."""
+def softmax(x: Sequence[float], temperature: float = 1.0) -> list[float]:
+    """Return softmax(x / temperature), computed as exp(y - max(y)) / sum(exp(y - max(y)))."""
     if not x:
         raise ValueError("x must not be empty")
-    m = max(x)
-    exps = [math.exp(v - m) for v in x]
+    if temperature <= 0:
+        raise ValueError(f"temperature must be positive, got {temperature}")
+    y = [v / temperature for v in x]
+    m = max(y)
+    exps = [math.exp(v - m) for v in y]
     total = math.fsum(exps)
     return [e / total for e in exps]

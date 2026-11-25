@@ -14,3 +14,14 @@ def test_sums_to_one_for_large_inputs():
 def test_empty_row():
     with pytest.raises(ValueError):
         softmax([])
+
+
+def test_temperature_flattens():
+    sharp = softmax([0.0, 1.0])
+    flat = softmax([0.0, 1.0], temperature=10.0)
+    assert flat[1] - flat[0] < sharp[1] - sharp[0]
+
+
+def test_temperature_must_be_positive():
+    with pytest.raises(ValueError):
+        softmax([1.0], temperature=0.0)
